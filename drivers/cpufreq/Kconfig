@@ -440,6 +440,11 @@ config CPU_FREQ_GOV_BACON
  	  For details, take a look at linux/Documentation/cpu-freq.
  	  If in doubt, say N.
 
+config CPU_FREQ_GOV_INTELLIDEMAND
+ 	tristate "'intellidemand' cpufreq governor"
+ 	depends on CPU_FREQ
+	default y
+
 config CPU_BOOST
 	tristate "Event base short term CPU freq boost"
 	depends on CPU_FREQ
