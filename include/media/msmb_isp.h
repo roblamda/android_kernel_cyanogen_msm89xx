@@ -9,6 +9,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#ifdef CONFIG_MACH_WT86518
+#include "msmb_isp_wt86518.h"
+#else
+
+#ifdef CONFIG_SEED_CAMERA
+#include <media/msmb_isp_seed.h>
+#else
+
 #ifndef __MSMB_ISP__
 #define __MSMB_ISP__
 
@@ -639,3 +647,9 @@ struct msm_isp_event_data32 {
 	_IOWR('V', BASE_VIDIOC_PRIVATE+21, struct msm_isp_event_data)
 #endif
 #endif /* __MSMB_ISP__ */
+<<<<<<< HEAD
+=======
+#endif /* CONFIG_MACH_WT86518 */
+#endif /* CONFIG_SEED_CAMERA */
+
+>>>>>>> d746e47259a... msm: camera: Import Seed camera driver
