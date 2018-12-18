@@ -89,7 +89,6 @@ obj-$(CONFIG_TOUCHSCREEN_GT9XX_YL)	+= gt9xx_yl/
 obj-$(CONFIG_TOUCHSCREEN_BU21150)	+= bu21150.o
 obj-$(CONFIG_INPUT_MT_WRAPPER)		+= input_mt_wrapper.o
 obj-$(CONFIG_TOUCHSCREEN_IT7260_I2C)    += it7258_ts_i2c.o
-obj-$(CONFIG_TOUCHSCREEN_FT8716)	+= ft8716/
 obj-$(CONFIG_WAKE_GESTURES)		+= wake_gestures.o
 ccflags-y += -Wno-array-bounds
 obj-$(CONFIG_TOUCHSCREEN_HIMAX852XES)	+= himax_852xES/
