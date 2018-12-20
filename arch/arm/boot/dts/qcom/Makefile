@@ -95,6 +95,12 @@ dtb-$(CONFIG_ARCH_MSM8916) += msm8916-t86519a1.dtb
 endif
 else ifeq ($(CONFIG_MACH_YULONG_MSM8939),y)
 dtb-$(CONFIG_ARCH_MSM8916) += msm8939-cp8675-i01-p0.dtb
+ifeq ($(CONFIG_MACH_WT86518),y)
+dtb-$(CONFIG_ARCH_MSM8916) += msm8916-wt86518.dtb
+else ifeq ($(CONFIG_MACH_RENDANG),y)
+dtb-$(CONFIG_ARCH_MSM8916) += msm8916-g36c1h.dtb
+else ifeq ($(CONFIG_MACH_SATE),y)
+dtb-$(CONFIG_ARCH_MSM8916) += msm8916-c46b2h.dtb
 else
 dtb-$(CONFIG_ARCH_MSM8916) += msm8916-cdp.dtb \
 	msm8916-cdp-smb1360.dtb \
