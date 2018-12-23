@@ -126,6 +126,7 @@
 		gpios = <&msm_gpio 27 0>,
 			<&msm_gpio 28 0>,
 			<&msm_gpio 33 0>,
+			<&msm_gpio 36 0>,
 			<&msm_gpio 32 0>;				
 		qcom,gpio-reset = <1>;
 		qcom,gpio-standby = <2>;
