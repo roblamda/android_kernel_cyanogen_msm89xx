@@ -28,23 +28,6 @@
 		bootargs = "sched_enable_hmp=1";
 	};
 
-        firmware: firmware {
-                 android {
-                         compatible = "android,firmware";
-                         fstab {
-                                 compatible = "android,fstab";
-                                 system {
-                                         compatible = "android,system";
-                                         dev = "/dev/block/platform/soc.0/7824900.sdhci/by-name/system";
-                                         type = "ext4";
-                                         mnt_flags = "ro,barrier=1,discard";
-                                         fsmgr_flags = "wait";
-                                         status = "ok";
-                                 };
-                         };
-                 };
-        };
-
 	aliases {
 		sdhc1 = &sdhc_1; /* SDC1 eMMC slot */
 		sdhc2 = &sdhc_2; /* SDC2 SD card slot */
@@ -1680,6 +1663,12 @@
 			qcom,levels = <533330 800000 998400>;
 			qcom,freq-req;
 		};
+	};
+
+	qcom,msm-thermal-simple {
+		compatible = "qcom,msm-thermal-simple";
+		qcom,thermal-vadc = <&pm8916_vadc>;
+		qcom,adc-channel = <54>; /* dev_harsh1998: Use pa_therm0 for msm8916 or simply 0x36 to decimal */
 	};
 
 	qcom,memshare {

@@ -78,6 +78,16 @@ static int previous_bias_level = SND_SOC_BIAS_OFF;
 
 #define LPASS_CSR_GP_LPAIF_PRI_PCM_PRI_MODE_MUXSEL 0x07702008
 
+#ifdef CONFIG_MACH_WT86518
+#define EXT_CLASS_D_EN_DELAY 13000
+#define EXT_CLASS_D_DIS_DELAY 3000
+#define EXT_CLASS_D_DELAY_DELTA 2000
+#define AW8155A_MODE 5
+static struct delayed_work lineout_amp_enable;
+static struct delayed_work lineout_amp_dualmode;
+static struct delayed_work lineout_amp_disable;
+#endif
+
 #define MAX_AUX_CODECS	2
 
 enum btsco_rates {
@@ -444,6 +454,9 @@ static char const *mi2s_tx_sample_rate_text[] = {"KHZ_48", "KHZ_96",
 #ifdef CONFIG_MACH_T86519A1
 static const char *const quatmi2s_clk_text[] = {"DISABLE", "ENABLE"};
 #endif
+#ifdef CONFIG_MACH_WT86518
+static const char *const lineout_text[] = {"DISABLE", "ENABLE", "DUALMODE"};
+#endif
 
 static int msm_auxpcm_be_params_fixup(struct snd_soc_pcm_runtime *rtd,
 					struct snd_pcm_hw_params *params)
@@ -646,6 +659,90 @@ static int mi2s_rx_bit_format_put(struct snd_kcontrol *kcontrol,
 	}
 	return 0;
 }
+
+#ifdef CONFIG_MACH_WT86518
+static void msm8x16_ext_spk_delayed_enable(struct work_struct *work)
+{
+	int i = 0;
+
+	gpio_direction_output(EXT_SPK_AMP_HEADSET_GPIO, false);
+	usleep_range(EXT_CLASS_D_EN_DELAY,
+			EXT_CLASS_D_EN_DELAY + EXT_CLASS_D_DELAY_DELTA);
+
+	for (i = 0; i < AW8155A_MODE; i++) {
+		gpio_direction_output(EXT_SPK_AMP_GPIO, false);
+		gpio_direction_output(EXT_SPK_AMP_GPIO, true);
+	}
+
+	usleep_range(EXT_CLASS_D_EN_DELAY,
+			EXT_CLASS_D_EN_DELAY + EXT_CLASS_D_DELAY_DELTA);
+}
+
+static void msm8x16_ext_spk_delayed_dualmode(struct work_struct *work)
+{
+	int i = 0;
+
+	gpio_direction_output(EXT_SPK_AMP_HEADSET_GPIO, true);
+	usleep_range(EXT_CLASS_D_EN_DELAY,
+		EXT_CLASS_D_EN_DELAY + EXT_CLASS_D_DELAY_DELTA);
+
+	for (i = 0; i < AW8155A_MODE; i++) {
+		gpio_direction_output(EXT_SPK_AMP_GPIO, false);
+		gpio_direction_output(EXT_SPK_AMP_GPIO, true);
+	}
+
+	usleep_range(EXT_CLASS_D_EN_DELAY,
+			EXT_CLASS_D_EN_DELAY + EXT_CLASS_D_DELAY_DELTA);
+}
+static void msm8x16_ext_spk_delayed_disable(struct work_struct *work)
+{
+    int i = 0;
+
+    /* Close the headset device */
+    gpio_direction_output(EXT_SPK_AMP_HEADSET_GPIO, false);
+    usleep_range(EXT_CLASS_D_EN_DELAY,
+        EXT_CLASS_D_EN_DELAY + EXT_CLASS_D_DELAY_DELTA);
+
+   /* Close external audio PA device */
+    for(i = 0; i < AW8155A_MODE; i++) {
+        gpio_direction_output(EXT_SPK_AMP_GPIO, false);
+        gpio_direction_output(EXT_SPK_AMP_GPIO, false);
+    }
+    usleep_range(EXT_CLASS_D_EN_DELAY,
+        EXT_CLASS_D_EN_DELAY + EXT_CLASS_D_DELAY_DELTA);
+
+    pr_debug("%s: Disable external speaker PAs.\n", __func__);
+}
+
+static int lineout_status_get(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+	return 0;
+}
+static int lineout_status_put(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+	int state = 0;
+	state = ucontrol->value.integer.value[0];
+
+	switch (state) {
+	case 0:
+		schedule_delayed_work(&lineout_amp_disable, msecs_to_jiffies(50));
+		break;
+	case 1:
+		schedule_delayed_work(&lineout_amp_enable, msecs_to_jiffies(50));
+		break;
+	case 2:
+		schedule_delayed_work(&lineout_amp_dualmode, msecs_to_jiffies(50));
+		break;
+	default:
+		pr_err("%s: Unexpected input value\n", __func__);
+		break;
+	}
+
+	return 0;
+}
+#endif
 
 static int loopback_mclk_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
@@ -1332,6 +1429,11 @@ static const struct soc_enum msm_snd_enum[] = {
 #ifdef CONFIG_MACH_T86519A1
 	SOC_ENUM_SINGLE_EXT(2, quatmi2s_clk_text),
 #endif
+
+#ifdef CONFIG_MACH_WT86518
+	SOC_ENUM_SINGLE_EXT(3, lineout_text),
+#endif
+
 };
 
 static const char *const btsco_rate_text[] = {"BTSCO_RATE_8KHZ",
@@ -1357,6 +1459,12 @@ static const struct snd_kcontrol_new msm_snd_controls[] = {
 			mi2s_tx_sample_rate_get, mi2s_tx_sample_rate_put),
 	SOC_ENUM_EXT("MI2S_RX SampleRate", msm_snd_enum[3],
 			mi2s_rx_sample_rate_get, mi2s_rx_sample_rate_put),
+
+#ifdef CONFIG_MACH_WT86518
+	SOC_ENUM_EXT("Lineout_1 amp", msm_snd_enum[6],
+			lineout_status_get, lineout_status_put),
+#endif
+
 };
 
 static int msm8x16_mclk_event(struct snd_soc_dapm_widget *w,
@@ -1961,6 +2069,17 @@ static void *def_msm8x16_wcd_mbhc_cal(void)
 	btn_high[3] = 112;
 	btn_low[4] = 137;
 	btn_high[4] = 137;
+#elif defined (CONFIG_MACH_WT86518)
+	btn_low[0] = 75;
+	btn_high[0] = 75;
+	btn_low[1] = 130;
+	btn_high[1] = 130;
+	btn_low[2] = 260;
+	btn_high[2] = 260;
+	btn_low[3] = 450;
+	btn_high[3] = 450;
+	btn_low[4] = 500;
+	btn_high[4] = 500;
 #else
 	btn_low[0] = 75;
 	btn_high[0] = 75;
@@ -1973,7 +2092,6 @@ static void *def_msm8x16_wcd_mbhc_cal(void)
 	btn_low[4] = 500;
 	btn_high[4] = 500;
 #endif
-
 	return msm8x16_wcd_cal;
 }
 
@@ -2021,6 +2139,13 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 			return ret;
 		}
 	}
+
+#ifdef CONFIG_MACH_WT86518
+	INIT_DELAYED_WORK(&lineout_amp_enable, msm8x16_ext_spk_delayed_enable);
+	INIT_DELAYED_WORK(&lineout_amp_dualmode, msm8x16_ext_spk_delayed_dualmode);
+	INIT_DELAYED_WORK(&lineout_amp_disable, msm8x16_ext_spk_delayed_disable);
+#endif
+
 	return msm8x16_wcd_hs_detect(codec, &mbhc_cfg);
 }
 
@@ -2839,6 +2964,7 @@ static struct snd_soc_dai_link msm8x16_dai[] = {
 		.codec_dai_name = "snd-soc-dummy-dai",
 		.codec_name = "snd-soc-dummy",
 	},
+#ifndef CONFIG_MACH_WT86518
 	{ /* hw:x, 26 */
 		.name = "QCHAT",
 		.stream_name = "QCHAT",
@@ -2855,6 +2981,7 @@ static struct snd_soc_dai_link msm8x16_dai[] = {
 		.codec_name = "snd-soc-dummy",
 		.be_id = MSM_FRONTEND_DAI_QCHAT,
 	},
+#endif
 	{/* hw:x,27 */
 		.name = "VoiceMMode1",
 		.stream_name = "VoiceMMode1",
@@ -3890,7 +4017,18 @@ static struct platform_driver msm8x16_asoc_machine_driver = {
 	.probe = msm8x16_asoc_machine_probe,
 	.remove = msm8x16_asoc_machine_remove,
 };
-module_platform_driver(msm8x16_asoc_machine_driver);
+
+static int __init msm8x16_machine_init(void)
+{
+	return platform_driver_register(&msm8x16_asoc_machine_driver);
+}
+late_initcall(msm8x16_machine_init);
+
+static void __exit msm8x16_machine_exit(void)
+{
+	return platform_driver_unregister(&msm8x16_asoc_machine_driver);
+}
+module_exit(msm8x16_machine_exit);
 
 MODULE_DESCRIPTION("ALSA SoC msm");
 MODULE_LICENSE("GPL v2");

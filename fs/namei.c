@@ -1994,7 +1994,7 @@ static int path_lookupat(int dfd, const char *name,
 	err = path_init(dfd, name, flags | LOOKUP_PARENT, nd, &base);
 
 	if (unlikely(err))
-		return err;
+		goto out;
 
 	current->total_link_count = 0;
 	err = link_path_walk(name, nd);
@@ -2036,6 +2036,7 @@ static int path_lookupat(int dfd, const char *name,
 		}
 	}
 
+out:
 	if (base)
 		fput(base);
 
@@ -4006,8 +4007,7 @@ int vfs_rename2(struct vfsmount *mnt,
 	if (!error)
 		fsnotify_move(old_dir, new_dir, old_name.name, is_dir,
 			      new_dentry->d_inode, old_dentry);
-	release_dentry_name_snapshot(&old_name);
-
+	take_dentry_name_snapshot(&old_name, old_dentry);
 	return error;
 }
 EXPORT_SYMBOL(vfs_rename2);

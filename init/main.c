@@ -200,13 +200,13 @@ EXPORT_SYMBOL(loops_per_jiffy);
 
 static int __init debug_kernel(char *str)
 {
-	console_loglevel = 10;
+	console_loglevel = 0;
 	return 0;
 }
 
 static int __init quiet_kernel(char *str)
 {
-	console_loglevel = 4;
+	console_loglevel = 0;
 	return 0;
 }
 
@@ -643,8 +643,6 @@ asmlinkage void __init start_kernel(void)
 		efi_free_boot_services();
 	}
 
-	ftrace_init();
-
 	/* Do the rest non-__init'ed, we're now alive */
 	rest_init();
 }
@@ -764,8 +762,11 @@ static void __init do_initcalls(void)
 {
 	int level;
 
-	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
+	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
 		do_initcall_level(level);
+		/* need to finish all async calls before going into next level */
+		async_synchronize_full();
+	}
 }
 
 /*
