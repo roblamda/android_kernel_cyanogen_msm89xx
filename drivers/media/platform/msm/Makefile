@@ -9,6 +9,8 @@ obj-y += broadcast/
 obj-$(CONFIG_DVB_MPQ) += dvb/
 ifeq ($(CONFIG_WT88047_CAMERA),y)
 obj-$(CONFIG_MSMB_CAMERA) += camera_wt88047_v2/
+else ifeq ($(CONFIG_MACH_G151),y)
+obj-$(CONFIG_MSMB_CAMERA) += camera_a16c3h_v2/
 else
 obj-$(CONFIG_MSMB_CAMERA) += camera_v2/
 endif

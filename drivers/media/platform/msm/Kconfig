@@ -44,7 +44,10 @@ if MSMB_CAMERA
 if WT88047_CAMERA
 source "drivers/media/platform/msm/camera_wt88047_v2/Kconfig"
 endif
-if !WT88047_CAMERA
+if CONFIG_MACH_G151
+source "drivers/media/platform/msm/camera_a16c3h_v2/Kconfig"
+endif
+if !CONFIG_MACH_G151 && !WT88047_CAMERA
 source "drivers/media/platform/msm/camera_v2/Kconfig"
 endif
 endif # MSMB_CAMERA
