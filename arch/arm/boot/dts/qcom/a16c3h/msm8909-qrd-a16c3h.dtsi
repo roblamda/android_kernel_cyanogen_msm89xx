@@ -289,5 +289,3 @@
 		qcom,vadc-thermal-node;
 	};
 };
-
-#include "msm8909-qrd-a16c3h-pstore.dtsi"
