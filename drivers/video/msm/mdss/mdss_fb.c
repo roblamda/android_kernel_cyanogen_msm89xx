@@ -2719,7 +2719,7 @@ static int mdss_fb_pan_idle(struct msm_fb_data_type *mfd)
 	return 0;
 }
 
-#ifndef CONFIG_MACH_RENDANG
+#ifndef CONFIG_ARCH_MSM8916
 static int mdss_fb_wait_for_kickoff(struct msm_fb_data_type *mfd)
 {
 	int ret = 0;
