@@ -12,7 +12,11 @@
 #include <linux/vmstat.h>
 #include <linux/atomic.h>
 #include <linux/vmalloc.h>
+
+#ifdef CONFIG_HISENSE_FULLRAM
 #include <linux/of_fdt.h>
+#endif
+
 #include <asm/page.h>
 #include <asm/pgtable.h>
 #include "internal.h"
@@ -107,7 +111,11 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
 		"AnonHugePages:  %8lu kB\n"
 #endif
 		,
+		#ifdef CONFIG_HISENSE_FULLRAM
 		total_ram/1024,   //hisense code
+		#else
+		K(i.totalram),
+		#endif // CONFIG_HISENSE_FULLRAM
 		K(i.freeram),
 		K(i.bufferram),
 		K(cached),
@@ -191,6 +199,7 @@ static const struct file_operations meminfo_proc_fops = {
 	.release	= single_release,
 };
 
+#ifdef CONFIG_HISENSE_FULLRAM
 //hisense code start
 static int memostotal_proc_show(struct seq_file *m, void *v)
 {
@@ -219,11 +228,14 @@ static const struct file_operations memostotal_proc_fops = {
 	.release	= single_release,
 };
 //hisense code end
+#endif // CONFIG_HISENSE_FULLRAM
 
 static int __init proc_meminfo_init(void)
 {
 	proc_create("meminfo", 0, NULL, &meminfo_proc_fops);
+	#ifdef CONFIG_HISENSE_FULLRAM
 	proc_create("memostotal", 0, NULL, &memostotal_proc_fops);  //hisense code
+	#endif // CONFIG_HISENSE_FULLRAM
 
 	return 0;
 }
