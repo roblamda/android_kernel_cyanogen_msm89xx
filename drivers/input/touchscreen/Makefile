@@ -92,7 +92,9 @@ obj-$(CONFIG_TOUCHSCREEN_IT7260_I2C)    += it7258_ts_i2c.o
 obj-$(CONFIG_TOUCHSCREEN_FT8716)	+= ft8716/
 obj-$(CONFIG_TOUCHSCREEN_HIMAX852XES)	+= himax_852xES/
 
-obj-$(CONFIG_MACH_LONGCHEER)	+= lct_tp_fm_info.o
+ifneq ($(filter y,$(CONFIG_ARCH_MSM8916) $(CONFIG_MACH_LONGCHEER)),)
+obj-y	+= lct_tp_fm_info.o
+endif
 obj-$(CONFIG_MACH_LONGCHEER)	+= lct_ctp_selftest.o
 obj-$(CONFIG_MACH_LONGCHEER)	+= lct_ctp_upgrade.o
 obj-$(CONFIG_MACH_LONGCHEER)	+= lct_if_ctp_upgrade.o
