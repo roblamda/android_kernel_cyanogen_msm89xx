@@ -23,6 +23,7 @@
 #include <linux/device.h>
 #include <linux/dma-mapping.h>
 #include <linux/dma-buf.h>
+#include "klapse.h"
 #include <linux/fb.h>
 #include <linux/init.h>
 #include <linux/ioport.h>
@@ -236,6 +237,15 @@ static int mdss_fb_notify_update(struct msm_fb_data_type *mfd,
 
 static int lcd_backlight_registered;
 
+#define LINEAR_CONVERT(v_old, min_new, max_new, min_old, max_old) \
+				((((v_old - min_old) * (max_new - min_new)) / (max_old - min_old)) + min_new)
+
+#define MDSS_BRIGHT_TO_BL1(out, v, bl_min, bl_max, min_bright, max_bright) do {\
+				if (v <= min_bright) out = bl_min; \
+				else \
+				out = LINEAR_CONVERT(v, bl_min, bl_max, min_bright, max_bright); \
+				} while (0)
+
 static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 				      enum led_brightness value)
 {
@@ -252,8 +262,19 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 
 	/* This maps android backlight level 0 to 255 into
 	   driver backlight level 0 to bl_max with rounding */
+#if 1
+	if (mfd->panel_info->bl_min < 5)
+		mfd->panel_info->bl_min = 4;
+	MDSS_BRIGHT_TO_BL1(bl_lvl, value, mfd->panel_info->bl_min, mfd->panel_info->bl_max,
+			1, mfd->panel_info->brightness_max);
+
+	if (bl_lvl && !value)
+		bl_lvl = 0;
+
+#else
 	MDSS_BRIGHT_TO_BL(bl_lvl, value, mfd->panel_info->bl_max,
 				mfd->panel_info->brightness_max);
+#endif
 
 	if (!bl_lvl && value)
 		bl_lvl = 1;
@@ -262,6 +283,9 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 							!mfd->bl_level)) {
 		mutex_lock(&mfd->bl_lock);
 		mdss_fb_set_backlight(mfd, bl_lvl);
+#ifdef CONFIG_KLAPSE
+		set_rgb_slider(bl_lvl);
+#endif
 		mutex_unlock(&mfd->bl_lock);
 	}
 }
@@ -2695,6 +2719,7 @@ static int mdss_fb_pan_idle(struct msm_fb_data_type *mfd)
 	return 0;
 }
 
+#ifndef CONFIG_ARCH_MSM8916
 static int mdss_fb_wait_for_kickoff(struct msm_fb_data_type *mfd)
 {
 	int ret = 0;
@@ -2717,6 +2742,7 @@ static int mdss_fb_wait_for_kickoff(struct msm_fb_data_type *mfd)
 
 	return 0;
 }
+#endif
 
 static int mdss_fb_pan_display_ex(struct fb_info *info,
 		struct mdp_display_commit *disp_commit)

@@ -75,6 +75,10 @@ extern int of_fdt_match(const void *blob, unsigned long node,
 extern void of_fdt_unflatten_tree(unsigned long *blob,
 			       struct device_node **mynodes);
 
+#ifdef CONFIG_HISENSE_FULLRAM
+extern unsigned long total_ram;  //hisense code
+#endif
+
 /* TBD: Temporary export of fdt globals - remove when code fully merged */
 extern int __initdata dt_root_addr_cells;
 extern int __initdata dt_root_size_cells;

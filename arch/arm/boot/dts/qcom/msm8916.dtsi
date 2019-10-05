@@ -25,8 +25,25 @@
 	interrupt-parent = <&intc>;
 
 	chosen {
-		bootargs = "sched_enable_hmp=1";
+		bootargs = "boot_cpus=0,1,2,3 sched_enable_hmp=1";
 	};
+
+	firmware: firmware {
+					android {
+                        compatible = "android,firmware";
+                        fstab {
+                            compatible = "android,fstab";
+                            system {
+                                compatible = "android,system";
+                                dev = "/dev/block/platform/soc.0/7824900.sdhci/by-name/system";
+                                type = "ext4";
+                                mnt_flags = "ro,barrier=1,discard";
+                                fsmgr_flags = "wait";
+                                status = "ok";
+                            };
+                        };
+                	};
+        };
 
 	aliases {
 		sdhc1 = &sdhc_1; /* SDC1 eMMC slot */
@@ -321,7 +338,10 @@
 			<  998400000 5>,
 			< 1094400000 6>,
 			< 1152000000 7>,
-			< 1209600000 8>;
+			< 1209600000 8>,
+ 			< 1248000000 9>,
+			< 1363200000 10>,
+			< 1401600000 11>;
 
 		qcom,speed1-bin-v0 =
 			<          0 0>,
@@ -332,6 +352,14 @@
 			<  998400000 5>,
 			< 1094400000 6>,
 			< 1152000000 7>;
+
+		qcom,speed3-bin-v0 =
+			<          0 0>,
+			<  200000000 1>,
+			<  400000000 2>,
+			<  533333000 3>,
+			<  800000000 4>,
+			<  998400000 5>;
 
 		qcom,speed0-bin-v1 =
 			<          0 0>,
@@ -354,7 +382,9 @@
 			< 1094400000 6>,
 			< 1152000000 7>,
 			< 1209600000 8>,
-			< 1363200000 9>;
+			< 1248000000 9>,
+			< 1363200000 10>,
+			< 1401600000 11>;
 
 		qcom,speed3-bin-v1 =
 			<          0 0>,
@@ -413,7 +443,9 @@
 			 < 1094400 >,
 			 < 1152000 >,
 			 < 1209600 >,
-			 < 1363200 >;
+			 < 1248000 >,
+			 < 1363200 >,
+			 < 1401600 >;
 	};
 
 	qcom,sps {
