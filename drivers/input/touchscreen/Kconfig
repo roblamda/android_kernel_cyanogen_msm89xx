@@ -1086,7 +1086,7 @@ config SECURE_TOUCH
 
 	  If unsure, say N.
 
-config TOUCHSCREEN_GT9XX
+menuconfig TOUCHSCREEN_GT9XX
 	bool "Goodix touchpanel GT9xx series"
 	depends on I2C
 	help
@@ -1096,7 +1096,14 @@ config TOUCHSCREEN_GT9XX
 
           If unsure, say N.
 
+if CONFIG_TOUCHSCREEN_GT9XXX
+if CONFIG_MACH_HISENSE
+source "drivers/input/touchscreen/goodix/Kconfig"
+endif
+if !CONFIG_MACH_HISENSE
 source "drivers/input/touchscreen/gt9xx/Kconfig"
+endif
+endif
 
 config TOUCHSCREEN_GT9XX_HQ
 	bool "Goodix touchpanel (HQ variant)"

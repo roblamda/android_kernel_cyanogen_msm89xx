@@ -83,7 +83,12 @@ obj-$(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_RMI4_DEV)	+= synaptics_rmi_dev.o
 obj-$(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_FW_UPDATE) 	+= synaptics_fw_update.o
 obj-$(CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI4)		+= synaptics_i2c_rmi4.o
 
+ifeq ($(CONFIG_MACH_HISENSE),y)
+obj-$(CONFIG_TOUCHSCREEN_GT9XX)		+= goodix/
+obj-y								+= ts_func_test.o
+else
 obj-$(CONFIG_TOUCHSCREEN_GT9XX)		+= gt9xx/
+endif
 obj-$(CONFIG_TOUCHSCREEN_GT9XX_HQ)	+= gt9xx_hq/
 obj-$(CONFIG_TOUCHSCREEN_GT9XX_YL)	+= gt9xx_yl/
 obj-$(CONFIG_TOUCHSCREEN_BU21150)	+= bu21150.o
@@ -95,6 +100,7 @@ obj-$(CONFIG_TOUCHSCREEN_HIMAX852XES)	+= himax_852xES/
 ifneq ($(filter y,$(CONFIG_ARCH_MSM8916) $(CONFIG_MACH_LONGCHEER)),)
 obj-y	+= lct_tp_fm_info.o
 endif
+
 obj-$(CONFIG_MACH_LONGCHEER)	+= lct_ctp_selftest.o
 obj-$(CONFIG_MACH_LONGCHEER)	+= lct_ctp_upgrade.o
 obj-$(CONFIG_MACH_LONGCHEER)	+= lct_if_ctp_upgrade.o
