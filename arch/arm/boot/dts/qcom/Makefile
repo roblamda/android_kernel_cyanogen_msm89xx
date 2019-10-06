@@ -95,6 +95,8 @@ else ifeq ($(CONFIG_MACH_WT86518),y)
 dtb-$(CONFIG_ARCH_MSM8916) += msm8916-wt86518.dtb
 else ifeq ($(CONFIG_MACH_SATE),y)
 dtb-$(CONFIG_ARCH_MSM8916) += msm8916-c46b2h.dtb
+else ifeq ($(CONFIG_MACH_SOTO),y)
+dtb-$(CONFIG_ARCH_MSM8916) += lc642u-v1-i46d1g.dtb
 else
 dtb-$(CONFIG_ARCH_MSM8916) += msm8916-cdp.dtb \
 	msm8916-cdp-smb1360.dtb \
