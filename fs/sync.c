@@ -20,7 +20,9 @@
 #define VALID_FLAGS (SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE| \
 			SYNC_FILE_RANGE_WAIT_AFTER)
 
+#ifdef CONFIG_MACH_WT86518
 extern bool is_touch_screen_suspended(void);
+#endif // CONFIG_MACH_WT86518
 
 /*
  * Do the filesystem syncing work. For simple filesystems
@@ -238,8 +240,10 @@ SYSCALL_DEFINE1(syncfs, int, fd)
  */
 int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 {
+	#ifdef CONFIG_MACH_WT86518
 	if (!is_touch_screen_suspended())
 		return 0;
+	#endif
 	
 	if (!file->f_op || !file->f_op->fsync)
 		return -EINVAL;
@@ -266,8 +270,10 @@ static int do_fsync(unsigned int fd, int datasync)
 	struct fd f = fdget(fd);
 	int ret = -EBADF;
 
+	#ifdef CONFIG_MACH_WT86518
 	if(!is_touch_screen_suspended())
 		return 0;
+	#endif
 
 	if (f.file) {
 		ret = vfs_fsync(f.file, datasync);
@@ -360,8 +366,10 @@ SYSCALL_DEFINE4(sync_file_range, int, fd, loff_t, offset, loff_t, nbytes,
 	loff_t endbyte;			/* inclusive */
 	umode_t i_mode;
 
+	#ifdef CONFIG_MACH_WT86518
 	if(!is_touch_screen_suspended())
 		return 0;
+	#endif
 
 	ret = -EINVAL;
 	if (flags & ~VALID_FLAGS)
