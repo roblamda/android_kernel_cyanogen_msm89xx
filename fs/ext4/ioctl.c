@@ -306,6 +306,10 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		inode->i_ctime = ext4_current_time(inode);
 
 		err = ext4_mark_iloc_dirty(handle, inode, &iloc);
+#if defined(CONFIG_EXT4_ASYNC_DISCARD_SUPPORT)
+//yh@PSW.BSP.Storage.EXT4, 2018-11-26 add for ext4 async discard suppot
+	ext4_update_time(EXT4_SB(inode->i_sb));
+#endif
 flags_err:
 		ext4_journal_stop(handle);
 		if (err)
@@ -601,6 +605,12 @@ resizefs_out:
 		struct request_queue *q = bdev_get_queue(sb->s_bdev);
 		struct fstrim_range range;
 		int ret = 0;
+
+#if defined(CONFIG_EXT4_ASYNC_DISCARD_SUPPORT)
+//yh@PSW.BSP.Storage.EXT4, 2018-11-26 add for ext4 async discard suppot
+		if (test_opt(sb, ASYNC_DISCARD))  
+			return 0;
+#endif
 
 		if (!capable(CAP_SYS_ADMIN))
 			return -EPERM;
