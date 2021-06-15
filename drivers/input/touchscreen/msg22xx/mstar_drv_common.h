@@ -145,7 +145,7 @@ extern unsigned global_reset_gpio;
  * Please make sure firmware support debug mode data log firstly, then you can enable this flag.
  * By default, this flag is enabled.
  */
-#define CONFIG_ENABLE_FIRMWARE_DATA_LOG (1)   // 1 : Enable, 0 : Disable
+#define CONFIG_ENABLE_FIRMWARE_DATA_LOG (0)   // 1 : Enable, 0 : Disable
 
 /*
  * Note.
@@ -154,7 +154,7 @@ extern unsigned global_reset_gpio;
  * So we need to retrieve the complete finger touch data by segment read.
  * By default, this compile option is enabled.
  */
-#define CONFIG_ENABLE_SEGMENT_READ_FINGER_TOUCH_DATA
+// #define CONFIG_ENABLE_SEGMENT_READ_FINGER_TOUCH_DATA
 
 /*
  * Note.
@@ -301,7 +301,7 @@ extern unsigned global_reset_gpio;
  * By the way, this feature is supported for MSG28XX only.
  * By default, this compile option is disabled.
  */
-#define CONFIG_ENABLE_CODE_FOR_DEBUG
+// #define CONFIG_ENABLE_CODE_FOR_DEBUG
 
 
 /*
@@ -516,7 +516,7 @@ extern unsigned global_reset_gpio;
  * If the debug log level is set as 0, the function for output log will be disabled.
  * By default, the debug log level is set as 1.
  */
-#define CONFIG_TOUCH_DRIVER_DEBUG_LOG_LEVEL (1)   // 1 : Default, 0 : No log. The bigger value, the more detailed log is output.
+#define CONFIG_TOUCH_DRIVER_DEBUG_LOG_LEVEL (0)   // 1 : Default, 0 : No log. The bigger value, the more detailed log is output.
 
 /*=============================================================*/
 // EXTERN VARIABLE DECLARATION
@@ -531,7 +531,7 @@ extern u8 TOUCH_DRIVER_DEBUG_LOG_LEVEL;
 
 #define DEBUG_LEVEL(level, fmt, arg...) do {\
 	                                           if (level <= TOUCH_DRIVER_DEBUG_LOG_LEVEL)\
-	                                               printk(fmt, ##arg);\
+	                                               pr_debug(fmt, ##arg);\
                                         } while (0)
 
 #define DBG(fmt, arg...) DEBUG_LEVEL(0, fmt, ##arg) 
